@@ -45,6 +45,12 @@ export default function SettingsPage() {
     )
   }
 
+  async function handleDeleteProject(p: Project) {
+    if (!confirm(`「${p.name}」を削除しますか？\n関連する時間記録もすべて削除されます。`)) return
+    await fetch(`/api/projects/${p.id}`, { method: 'DELETE' })
+    setProjects((prev) => prev.filter((x) => x.id !== p.id))
+  }
+
   async function handleToggleProject(p: Project) {
     await fetch(`/api/projects/${p.id}`, {
       method: 'PATCH',
@@ -97,6 +103,12 @@ export default function SettingsPage() {
                   className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
                 >
                   <i className="fa-solid fa-pen text-xs" />
+                </button>
+                <button
+                  onClick={() => handleDeleteProject(p)}
+                  className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 transition-colors"
+                >
+                  <i className="fa-solid fa-trash text-xs" />
                 </button>
                 <button
                   onClick={() => handleToggleProject(p)}
