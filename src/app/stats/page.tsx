@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import { ChartData, ChartPeriod, TimeEntry } from '@/types'
 import { getPeriodRange } from '@/lib/utils'
 import PieChartWidget from '@/components/PieChartWidget'
@@ -22,10 +21,12 @@ function buildCategoryChart(entries: TimeEntry[]): { data: ChartData[]; total: n
     const prev = map.get(key)
     map.set(key, { seconds: (prev?.seconds ?? 0) + s, color })
   }
-  const data = Array.from(map.entries())
-    .map(([name, { seconds, color }]) => ({ name, value: seconds, color }))
-    .sort((a, b) => b.value - a.value)
-  return { data, total }
+  return {
+    data: Array.from(map.entries())
+      .map(([name, { seconds, color }]) => ({ name, value: seconds, color }))
+      .sort((a, b) => b.value - a.value),
+    total,
+  }
 }
 
 function buildProjectChart(entries: TimeEntry[]): { data: ChartData[]; total: number } {
@@ -39,10 +40,12 @@ function buildProjectChart(entries: TimeEntry[]): { data: ChartData[]; total: nu
     const prev = map.get(key)
     map.set(key, { seconds: (prev?.seconds ?? 0) + s, color })
   }
-  const data = Array.from(map.entries())
-    .map(([name, { seconds, color }]) => ({ name, value: seconds, color }))
-    .sort((a, b) => b.value - a.value)
-  return { data, total }
+  return {
+    data: Array.from(map.entries())
+      .map(([name, { seconds, color }]) => ({ name, value: seconds, color }))
+      .sort((a, b) => b.value - a.value),
+    total,
+  }
 }
 
 export default function StatsPage() {
@@ -53,13 +56,11 @@ export default function StatsPage() {
   const fetchStats = useCallback(async (p: ChartPeriod) => {
     setIsLoading(true)
     const { from, to } = getPeriodRange(p)
-    const { data } = await supabase
-      .from('time_entries')
-      .select('*, project:projects(*), category:task_categories(*)')
-      .not('ended_at', 'is', null)
-      .gte('started_at', from.toISOString())
-      .lte('started_at', to.toISOString())
-    setEntries(data ?? [])
+    const res = await fetch(
+      `/api/entries?from=${from.toISOString()}&to=${to.toISOString()}&ended=true`,
+    )
+    const data = await res.json()
+    setEntries(Array.isArray(data) ? data : [])
     setIsLoading(false)
   }, [])
 
@@ -85,9 +86,7 @@ export default function StatsPage() {
             key={p}
             onClick={() => setPeriod(p)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              period === p
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                : 'text-gray-400 hover:text-gray-600'
+              period === p ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-gray-400'
             }`}
           >
             {PERIOD_LABELS[p]}
@@ -101,16 +100,8 @@ export default function StatsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          <PieChartWidget
-            title="作業種類別"
-            data={categoryChart.data}
-            totalSeconds={categoryChart.total}
-          />
-          <PieChartWidget
-            title="プロジェクト別"
-            data={projectChart.data}
-            totalSeconds={projectChart.total}
-          />
+          <PieChartWidget title="作業種類別" data={categoryChart.data} totalSeconds={categoryChart.total} />
+          <PieChartWidget title="プロジェクト別" data={projectChart.data} totalSeconds={projectChart.total} />
         </div>
       )}
     </div>

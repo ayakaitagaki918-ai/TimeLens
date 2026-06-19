@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import { TimeEntry } from '@/types'
 
 export function useTimer() {
@@ -9,13 +8,8 @@ export function useTimer() {
   const [isLoading, setIsLoading] = useState(true)
 
   const loadActiveEntry = useCallback(async () => {
-    const { data } = await supabase
-      .from('time_entries')
-      .select('*, project:projects(*), category:task_categories(*)')
-      .is('ended_at', null)
-      .order('started_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    const res = await fetch('/api/timer')
+    const data = await res.json()
     setActiveEntry(data ?? null)
     setIsLoading(false)
   }, [])
@@ -38,35 +32,26 @@ export function useTimer() {
     categoryId: string,
     subTask?: string,
   ) => {
-    const { data, error } = await supabase
-      .from('time_entries')
-      .insert({
-        project_id: projectId,
-        category_id: categoryId,
-        sub_task: subTask ?? null,
-        started_at: new Date().toISOString(),
-      })
-      .select('*, project:projects(*), category:task_categories(*)')
-      .single()
-    if (data) setActiveEntry(data)
-    return { data, error }
+    const res = await fetch('/api/timer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, categoryId, subTask }),
+    })
+    const data = await res.json()
+    if (res.ok) setActiveEntry(data)
+    return { data, error: res.ok ? null : data.error }
   }, [])
 
   const stopTimer = useCallback(async () => {
     if (!activeEntry) return null
-    const endedAt = new Date().toISOString()
-    const durationSeconds = Math.floor(
-      (new Date(endedAt).getTime() - new Date(activeEntry.started_at).getTime()) / 1000,
-    )
-    const { data, error } = await supabase
-      .from('time_entries')
-      .update({ ended_at: endedAt, duration_seconds: durationSeconds })
-      .eq('id', activeEntry.id)
-      .select()
-      .single()
+    await fetch('/api/timer', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: activeEntry.id, startedAt: activeEntry.started_at }),
+    })
     setActiveEntry(null)
     setElapsed(0)
-    return { data, error }
+    return { data: null, error: null }
   }, [activeEntry])
 
   return { activeEntry, elapsed, isLoading, startTimer, stopTimer, loadActiveEntry }

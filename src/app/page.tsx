@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import { Project, TaskCategory } from '@/types'
 import { useTimer } from '@/hooks/useTimer'
 import ActiveTimer from '@/components/ActiveTimer'
@@ -18,12 +17,13 @@ export default function HomePage() {
   const [isStarting, setIsStarting] = useState(false)
 
   const loadData = useCallback(async () => {
-    const [{ data: p }, { data: c }] = await Promise.all([
-      supabase.from('projects').select('*').eq('is_active', true).order('created_at'),
-      supabase.from('task_categories').select('*').order('sort_order'),
+    const [pRes, cRes] = await Promise.all([
+      fetch('/api/projects'),
+      fetch('/api/categories'),
     ])
-    setProjects(p ?? [])
-    setCategories(c ?? [])
+    const [p, c] = await Promise.all([pRes.json(), cRes.json()])
+    setProjects((Array.isArray(p) ? p : []).filter((x: Project) => x.is_active))
+    setCategories(Array.isArray(c) ? c : [])
   }, [])
 
   useEffect(() => {
@@ -45,12 +45,13 @@ export default function HomePage() {
   }
 
   async function handleAddProject(name: string, color: string) {
-    const { data } = await supabase
-      .from('projects')
-      .insert({ name, color })
-      .select()
-      .single()
-    if (data) setProjects((prev) => [...prev, data])
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color }),
+    })
+    const data = await res.json()
+    if (res.ok) setProjects((prev) => [...prev, data])
   }
 
   if (timerLoading) {
@@ -98,9 +99,7 @@ export default function HomePage() {
       {!activeEntry && (
         <ProjectGrid
           projects={projects}
-          onSelect={(p) => {
-            if (!activeEntry) setSelectedProject(p)
-          }}
+          onSelect={(p) => { if (!activeEntry) setSelectedProject(p) }}
           onAdd={() => setShowAddProject(true)}
         />
       )}

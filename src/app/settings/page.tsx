@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import { Project, TaskCategory } from '@/types'
 import AddProjectModal from '@/components/AddProjectModal'
 
@@ -12,12 +11,13 @@ export default function SettingsPage() {
   const [editName, setEditName] = useState('')
 
   const loadData = useCallback(async () => {
-    const [{ data: p }, { data: c }] = await Promise.all([
-      supabase.from('projects').select('*').order('created_at'),
-      supabase.from('task_categories').select('*').order('sort_order'),
+    const [pRes, cRes] = await Promise.all([
+      fetch('/api/projects'),
+      fetch('/api/categories'),
     ])
-    setProjects(p ?? [])
-    setCategories(c ?? [])
+    const [p, c] = await Promise.all([pRes.json(), cRes.json()])
+    setProjects(Array.isArray(p) ? p : [])
+    setCategories(Array.isArray(c) ? c : [])
   }, [])
 
   useEffect(() => {
@@ -25,18 +25,31 @@ export default function SettingsPage() {
   }, [loadData])
 
   async function handleAddProject(name: string, color: string) {
-    const { data } = await supabase.from('projects').insert({ name, color }).select().single()
-    if (data) setProjects((prev) => [...prev, data])
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color }),
+    })
+    const data = await res.json()
+    if (res.ok) setProjects((prev) => [...prev, data])
   }
 
   async function handleToggleProject(p: Project) {
-    await supabase.from('projects').update({ is_active: !p.is_active }).eq('id', p.id)
+    await fetch(`/api/projects/${p.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: !p.is_active }),
+    })
     setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_active: !x.is_active } : x)))
   }
 
   async function handleRenameProject() {
     if (!editingProject || !editName.trim()) return
-    await supabase.from('projects').update({ name: editName.trim() }).eq('id', editingProject.id)
+    await fetch(`/api/projects/${editingProject.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editName.trim() }),
+    })
     setProjects((prev) =>
       prev.map((x) => (x.id === editingProject.id ? { ...x, name: editName.trim() } : x)),
     )
@@ -53,7 +66,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* プロジェクト */}
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -95,18 +107,8 @@ export default function SettingsPage() {
               <div className="flex gap-2 items-center">
                 {editingProject?.id === p.id ? (
                   <>
-                    <button
-                      onClick={handleRenameProject}
-                      className="text-blue-600 text-xs font-bold bg-blue-50 px-2.5 py-1 rounded-lg"
-                    >
-                      保存
-                    </button>
-                    <button
-                      onClick={() => setEditingProject(null)}
-                      className="text-gray-400 text-xs px-2 py-1"
-                    >
-                      取消
-                    </button>
+                    <button onClick={handleRenameProject} className="text-blue-600 text-xs font-bold bg-blue-50 px-2.5 py-1 rounded-lg">保存</button>
+                    <button onClick={() => setEditingProject(null)} className="text-gray-400 text-xs px-2 py-1">取消</button>
                   </>
                 ) : (
                   <>
@@ -118,17 +120,11 @@ export default function SettingsPage() {
                     </button>
                     <button
                       onClick={() => handleToggleProject(p)}
-                      className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all ${
-                        p.is_active
-                          ? 'bg-emerald-50 text-emerald-600'
-                          : 'bg-gray-50 text-gray-300'
-                      }`}
+                      className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all ${p.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-300'}`}
                     >
-                      {p.is_active ? (
-                        <><i className="fa-solid fa-circle-check mr-1" />有効</>
-                      ) : (
-                        <><i className="fa-solid fa-circle-xmark mr-1" />無効</>
-                      )}
+                      {p.is_active
+                        ? <><i className="fa-solid fa-circle-check mr-1" />有効</>
+                        : <><i className="fa-solid fa-circle-xmark mr-1" />無効</>}
                     </button>
                   </>
                 )}
@@ -138,7 +134,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* カテゴリ */}
       <section>
         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
           <i className="fa-solid fa-tags text-gray-300" />
