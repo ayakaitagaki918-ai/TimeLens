@@ -8,10 +8,15 @@ export function useTimer() {
   const [isLoading, setIsLoading] = useState(true)
 
   const loadActiveEntry = useCallback(async () => {
-    const res = await fetch('/api/timer')
-    const data = await res.json()
-    setActiveEntry(data ?? null)
-    setIsLoading(false)
+    try {
+      const res = await fetch('/api/timer')
+      const data = await res.json()
+      setActiveEntry(res.ok && data && data.id ? data : null)
+    } catch {
+      setActiveEntry(null)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   useEffect(() => {
