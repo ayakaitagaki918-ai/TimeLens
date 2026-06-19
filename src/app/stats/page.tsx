@@ -72,15 +72,22 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold text-gray-800">統計</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">統計</h1>
+        <div className="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center shadow-md shadow-violet-500/40">
+          <i className="fa-solid fa-chart-pie text-white" />
+        </div>
+      </div>
 
-      <div className="bg-white rounded-2xl p-1 flex shadow-sm border border-gray-100">
+      <div className="bg-white rounded-2xl p-1.5 flex shadow-md shadow-gray-200/60 border border-gray-50">
         {(Object.keys(PERIOD_LABELS) as ChartPeriod[]).map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
-              period === p ? 'bg-blue-600 text-white' : 'text-gray-500'
+            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              period === p
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                : 'text-gray-400 hover:text-gray-600'
             }`}
           >
             {PERIOD_LABELS[p]}

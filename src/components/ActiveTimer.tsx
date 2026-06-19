@@ -11,26 +11,30 @@ interface Props {
 
 export default function ActiveTimer({ entry, elapsed, onStop, isLoading }: Props) {
   return (
-    <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl shadow-blue-500/30">
+      <div className="flex items-center gap-2 mb-3">
         <span className="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse" />
-        <span className="text-sm font-medium opacity-90">記録中</span>
+        <span className="text-xs font-bold tracking-widest uppercase opacity-90">記録中</span>
       </div>
-      <p className="text-lg font-semibold truncate">{entry.project?.name}</p>
-      <p className="text-sm opacity-80 mb-4">
-        {entry.category?.icon} {entry.category?.name}
-        {entry.sub_task && <span className="ml-2 opacity-70">/ {entry.sub_task}</span>}
+      <p className="text-xl font-bold truncate">{entry.project?.name}</p>
+      <p className="text-sm opacity-75 mb-5 flex items-center gap-1.5">
+        <span>{entry.category?.icon}</span>
+        <span>{entry.category?.name}</span>
+        {entry.sub_task && <span className="opacity-60">/ {entry.sub_task}</span>}
       </p>
-      <div className="text-4xl font-mono font-bold tracking-wider mb-5 text-center">
+      <div className="text-5xl font-mono font-bold tracking-wider mb-6 text-center drop-shadow-sm">
         {formatElapsed(elapsed)}
       </div>
       <button
         onClick={onStop}
         disabled={isLoading}
-        className="w-full bg-white text-blue-700 font-bold py-3 rounded-xl text-base
-          active:scale-95 transition-transform disabled:opacity-60"
+        className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white font-bold py-3.5 rounded-2xl text-base active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
       >
-        ■ ストップ
+        {isLoading ? (
+          <><i className="fa-solid fa-spinner fa-spin" /> 停止中…</>
+        ) : (
+          <><i className="fa-solid fa-stop" /> ストップ</>
+        )}
       </button>
     </div>
   )

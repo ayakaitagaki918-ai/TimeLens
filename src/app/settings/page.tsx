@@ -46,27 +46,35 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">設定</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">設定</h1>
+        <div className="w-10 h-10 rounded-2xl bg-slate-600 flex items-center justify-center shadow-md shadow-slate-500/40">
+          <i className="fa-solid fa-gear text-white" />
+        </div>
+      </div>
 
       {/* プロジェクト */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-700">プロジェクト</h2>
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+            <i className="fa-solid fa-folder text-gray-300" />
+            プロジェクト
+          </h2>
           <button
             onClick={() => setShowAddProject(true)}
-            className="text-sm text-blue-600 font-semibold"
+            className="flex items-center gap-1.5 text-sm text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 active:scale-95 transition-all"
           >
-            ＋ 追加
+            <i className="fa-solid fa-plus text-xs" />追加
           </button>
         </div>
         <div className="space-y-2">
           {projects.map((p) => (
             <div
               key={p.id}
-              className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-3"
+              className="bg-white rounded-2xl px-4 py-3 shadow-md shadow-gray-200/60 border border-gray-50 flex items-center gap-3"
             >
               <span
-                className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm"
+                className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm"
                 style={{ backgroundColor: p.color }}
               >
                 {p.name[0]}
@@ -77,30 +85,50 @@ export default function SettingsPage() {
                   onChange={(e) => setEditName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRenameProject()}
                   autoFocus
-                  className="flex-1 border border-blue-300 rounded-lg px-3 py-1 text-sm focus:outline-none"
+                  className="flex-1 border border-blue-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50"
                 />
               ) : (
-                <span className="flex-1 text-sm text-gray-700">{p.name}</span>
+                <span className={`flex-1 text-sm font-semibold ${p.is_active ? 'text-gray-700' : 'text-gray-400'}`}>
+                  {p.name}
+                </span>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 {editingProject?.id === p.id ? (
                   <>
-                    <button onClick={handleRenameProject} className="text-blue-600 text-xs font-semibold">保存</button>
-                    <button onClick={() => setEditingProject(null)} className="text-gray-400 text-xs">取消</button>
+                    <button
+                      onClick={handleRenameProject}
+                      className="text-blue-600 text-xs font-bold bg-blue-50 px-2.5 py-1 rounded-lg"
+                    >
+                      保存
+                    </button>
+                    <button
+                      onClick={() => setEditingProject(null)}
+                      className="text-gray-400 text-xs px-2 py-1"
+                    >
+                      取消
+                    </button>
                   </>
                 ) : (
                   <>
                     <button
                       onClick={() => { setEditingProject(p); setEditName(p.name) }}
-                      className="text-gray-400 text-xs"
+                      className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
                     >
-                      編集
+                      <i className="fa-solid fa-pen text-xs" />
                     </button>
                     <button
                       onClick={() => handleToggleProject(p)}
-                      className={`text-xs font-semibold ${p.is_active ? 'text-green-500' : 'text-gray-300'}`}
+                      className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all ${
+                        p.is_active
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'bg-gray-50 text-gray-300'
+                      }`}
                     >
-                      {p.is_active ? '有効' : '無効'}
+                      {p.is_active ? (
+                        <><i className="fa-solid fa-circle-check mr-1" />有効</>
+                      ) : (
+                        <><i className="fa-solid fa-circle-xmark mr-1" />無効</>
+                      )}
                     </button>
                   </>
                 )}
@@ -112,25 +140,29 @@ export default function SettingsPage() {
 
       {/* カテゴリ */}
       <section>
-        <h2 className="font-semibold text-gray-700 mb-3">作業カテゴリ</h2>
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+          <i className="fa-solid fa-tags text-gray-300" />
+          作業カテゴリ
+        </h2>
         <div className="space-y-2">
           {categories.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-3"
+              className="bg-white rounded-2xl px-4 py-3 shadow-md shadow-gray-200/60 border border-gray-50 flex items-center gap-3"
             >
               <span
-                className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-lg"
+                className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-lg"
                 style={{ backgroundColor: c.color + '22' }}
               >
                 {c.icon ?? '📦'}
               </span>
-              <span className="flex-1 text-sm text-gray-700">{c.name}</span>
+              <span className="flex-1 text-sm font-semibold text-gray-700">{c.name}</span>
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }} />
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400 mt-2 px-1">
+        <p className="text-xs text-gray-400 mt-2 px-1 flex items-center gap-1.5">
+          <i className="fa-solid fa-circle-info text-[10px]" />
           カテゴリはSupabaseで直接追加できます
         </p>
       </section>

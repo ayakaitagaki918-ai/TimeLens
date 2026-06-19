@@ -49,59 +49,74 @@ export default function EditEntryModal({ entry, onSave, onDelete, onClose }: Pro
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end z-50" onClick={onClose}>
       <div
-        className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-4 pb-10"
+        className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-4 pb-10 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-2" />
-        <div>
-          <p className="font-bold text-lg text-gray-800">{entry.project?.name}</p>
-          <p className="text-sm text-gray-500">
-            {entry.category?.icon} {entry.category?.name}
-            {durationSeconds > 0 && (
-              <span className="ml-2 text-blue-600 font-semibold">{formatDuration(durationSeconds)}</span>
-            )}
-          </p>
+        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto" />
+
+        <div className="flex items-start gap-3">
+          <span
+            className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
+            style={{ backgroundColor: entry.category?.color + '22' }}
+          >
+            {entry.category?.icon ?? '📦'}
+          </span>
+          <div>
+            <p className="font-bold text-gray-800">{entry.project?.name}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-2">
+              {entry.category?.name}
+              {durationSeconds > 0 && (
+                <span className="text-blue-600 font-semibold font-mono">{formatDuration(durationSeconds)}</span>
+              )}
+            </p>
+          </div>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">細タスク</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5">細タスク</label>
           <input
             value={subTask}
             onChange={(e) => setSubTask(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition-colors"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-500 block mb-1">開始</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+              <i className="fa-solid fa-play text-green-400 mr-1" />開始
+            </label>
             <input
               type="datetime-local"
               value={startedAt}
               onChange={(e) => setStartedAt(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition-colors"
             />
           </div>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">終了</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+              <i className="fa-solid fa-stop text-red-400 mr-1" />終了
+            </label>
             <input
               type="datetime-local"
               value={endedAt}
               onChange={(e) => setEndedAt(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">メモ</label>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+            <i className="fa-solid fa-note-sticky text-yellow-400 mr-1" />メモ
+          </label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={2}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition-colors"
           />
         </div>
 
@@ -109,16 +124,20 @@ export default function EditEntryModal({ entry, onSave, onDelete, onClose }: Pro
           <button
             onClick={handleDelete}
             disabled={isSaving}
-            className="flex-1 border border-red-200 text-red-500 py-3 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-40"
+            className="flex-1 border-2 border-red-100 text-red-500 bg-red-50 py-3 rounded-xl font-semibold active:scale-95 transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
           >
-            削除
+            <i className="fa-solid fa-trash text-sm" />削除
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-2 flex-grow bg-blue-600 text-white py-3 rounded-xl font-bold active:scale-95 transition-transform disabled:opacity-40"
+            className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold active:scale-95 transition-all disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/30"
           >
-            {isSaving ? '保存中…' : '保存'}
+            {isSaving ? (
+              <><i className="fa-solid fa-spinner fa-spin" /> 保存中…</>
+            ) : (
+              <><i className="fa-solid fa-check" /> 保存</>
+            )}
           </button>
         </div>
       </div>

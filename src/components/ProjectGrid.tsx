@@ -10,35 +10,33 @@ interface Props {
 export default function ProjectGrid({ projects, onSelect, onAdd }: Props) {
   return (
     <div>
-      <h2 className="text-sm font-semibold text-gray-500 mb-3">プロジェクトを選択</h2>
+      <h2 className="text-xs font-bold text-gray-400 tracking-widest uppercase mb-3">プロジェクト</h2>
       <div className="grid grid-cols-3 gap-3">
         {projects.map((p) => (
           <button
             key={p.id}
             onClick={() => onSelect(p)}
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white shadow-sm
-              border border-gray-100 active:scale-95 transition-transform"
+            className="flex flex-col items-center gap-2.5 p-4 rounded-2xl bg-white shadow-md shadow-gray-200/60 border border-gray-50 active:scale-95 transition-all"
           >
             <span
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-sm"
               style={{ backgroundColor: p.color }}
             >
               {p.name[0]}
             </span>
-            <span className="text-xs text-gray-700 text-center leading-tight line-clamp-2">
+            <span className="text-xs font-semibold text-gray-700 text-center leading-tight line-clamp-2">
               {p.name}
             </span>
           </button>
         ))}
         <button
           onClick={onAdd}
-          className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-dashed
-            border-gray-200 active:scale-95 transition-transform"
+          className="flex flex-col items-center gap-2.5 p-4 rounded-2xl border-2 border-dashed border-gray-200 active:scale-95 transition-all group hover:border-blue-300"
         >
-          <span className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-2xl text-gray-400">
-            +
+          <span className="w-12 h-12 rounded-2xl bg-gray-50 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
+            <i className="fa-solid fa-plus text-gray-300 group-hover:text-blue-400 text-lg transition-colors" />
           </span>
-          <span className="text-xs text-gray-400 text-center">追加</span>
+          <span className="text-xs font-semibold text-gray-400 group-hover:text-blue-400 transition-colors">追加</span>
         </button>
       </div>
     </div>

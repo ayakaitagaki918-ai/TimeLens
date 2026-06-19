@@ -12,19 +12,19 @@ interface Props {
 export default function PieChartWidget({ data, title, totalSeconds }: Props) {
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center py-10">
-        <p className="text-gray-300 text-3xl mb-2">📊</p>
+      <div className="bg-white rounded-2xl p-5 shadow-md shadow-gray-200/60 border border-gray-50 text-center py-12">
+        <i className="fa-solid fa-chart-pie text-4xl text-gray-200 mb-3 block" />
         <p className="text-gray-400 text-sm">{title}のデータがありません</p>
       </div>
     )
   }
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+    <div className="bg-white rounded-2xl p-5 shadow-md shadow-gray-200/60 border border-gray-50">
       <div className="flex justify-between items-center mb-3">
-        <p className="font-semibold text-gray-700">{title}</p>
-        <p className="text-sm text-blue-600 font-mono font-semibold">
-          合計 {formatDurationHours(totalSeconds)}
-        </p>
+        <p className="font-bold text-gray-700">{title}</p>
+        <span className="text-sm text-blue-600 font-mono font-bold bg-blue-50 px-2.5 py-1 rounded-lg">
+          {formatDurationHours(totalSeconds)}
+        </span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>

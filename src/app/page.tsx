@@ -64,8 +64,13 @@ export default function HomePage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">TimeLens</h1>
-        <span className="text-2xl">⏱</span>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">TimeLens</h1>
+          <p className="text-xs text-gray-400 mt-0.5">時間を記録して傾向を掴もう</p>
+        </div>
+        <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/40">
+          <i className="fa-solid fa-clock text-white" />
+        </div>
       </div>
 
       {activeEntry ? (
@@ -84,8 +89,9 @@ export default function HomePage() {
           isLoading={isStarting}
         />
       ) : (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center text-blue-500 text-sm">
-          プロジェクトを選んで作業を開始しよう
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-4 flex items-center gap-3 text-blue-500">
+          <i className="fa-solid fa-hand-pointer text-blue-400 text-lg" />
+          <p className="text-sm font-medium">プロジェクトを選んで作業を開始しよう</p>
         </div>
       )}
 

@@ -29,16 +29,20 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold text-gray-800">履歴</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">履歴</h1>
+        <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/40">
+          <i className="fa-solid fa-list text-white" />
+        </div>
+      </div>
 
       <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
         <input
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="プロジェクト名で検索"
-          className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm
-            focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
         />
       </div>
 
@@ -48,13 +52,16 @@ export default function HistoryPage() {
         </div>
       ) : entries.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-4xl mb-3">📋</p>
-          <p>記録がまだありません</p>
+          <i className="fa-solid fa-inbox text-5xl mb-3 block text-gray-200" />
+          <p className="font-medium">記録がまだありません</p>
         </div>
       ) : (
         Object.entries(grouped).map(([date, dayEntries]) => (
           <section key={date} className="space-y-2">
-            <p className="text-xs font-semibold text-gray-400 px-1">{date}</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1 flex items-center gap-2">
+              <i className="fa-solid fa-calendar-day text-[10px]" />
+              {date}
+            </p>
             {dayEntries.map((e) => (
               <EntryCard key={e.id} entry={e} onEdit={setEditTarget} />
             ))}
