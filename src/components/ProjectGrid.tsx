@@ -19,10 +19,10 @@ export default function ProjectGrid({ projects, onSelect, onAdd }: Props) {
             className="flex flex-col items-center gap-2.5 p-4 rounded-2xl bg-white shadow-md shadow-gray-200/60 border border-gray-50 active:scale-95 transition-all"
           >
             <span
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-sm"
-              style={{ backgroundColor: p.color }}
+              className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm"
+              style={{ backgroundColor: p.icon ? p.color + '22' : p.color, color: p.icon ? 'inherit' : 'white' }}
             >
-              {p.name[0]}
+              {p.icon ?? p.name[0]}
             </span>
             <span className="text-xs font-semibold text-gray-700 text-center leading-tight line-clamp-2">
               {p.name}

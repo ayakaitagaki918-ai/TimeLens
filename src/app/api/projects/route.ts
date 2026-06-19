@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { data, error } = await supabaseServer
     .from('projects')
-    .insert({ name: body.name, color: body.color })
+    .insert({ name: body.name, color: body.color, icon: body.icon ?? null })
     .select()
     .single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

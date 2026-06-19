@@ -7,20 +7,29 @@ const COLORS = [
   '#F97316', '#84CC16',
 ]
 
+const ICONS = [
+  '💼', '📊', '📋', '📝', '💡', '🎯', '🚀', '⚡',
+  '💻', '📱', '🖥️', '🎨', '🎬', '📸', '🎵', '🎮',
+  '🏥', '💊', '🏃', '🧘', '🍎', '☕', '🌿', '🌟',
+  '📚', '🎓', '💰', '📈', '🏢', '🏠', '❤️', '✈️',
+  '🔧', '⚙️', '🔬', '🌍',
+]
+
 interface Props {
-  onSave: (name: string, color: string) => Promise<void>
+  onSave: (name: string, color: string, icon: string | null) => Promise<void>
   onClose: () => void
 }
 
 export default function AddProjectModal({ onSave, onClose }: Props) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[0])
+  const [icon, setIcon] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
   async function handleSave() {
     if (!name.trim()) return
     setIsSaving(true)
-    await onSave(name.trim(), color)
+    await onSave(name.trim(), color, icon)
     setIsSaving(false)
     onClose()
   }
@@ -52,6 +61,38 @@ export default function AddProjectModal({ onSave, onClose }: Props) {
             placeholder="例：クリニックLP"
             className="w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition-colors"
           />
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-3">
+            アイコン
+          </label>
+          <div className="grid grid-cols-9 gap-1.5">
+            <button
+              onClick={() => setIcon(null)}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
+                icon === null
+                  ? 'ring-2 ring-offset-1 ring-blue-500 bg-blue-50 scale-110'
+                  : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+              }`}
+              style={icon === null ? { backgroundColor: color, color: 'white' } : {}}
+            >
+              {icon === null ? (name[0]?.toUpperCase() ?? 'A') : '−'}
+            </button>
+            {ICONS.map((em) => (
+              <button
+                key={em}
+                onClick={() => setIcon(em)}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all active:scale-90 ${
+                  icon === em
+                    ? 'ring-2 ring-offset-1 ring-blue-500 bg-blue-50 scale-110 shadow-md'
+                    : 'hover:bg-gray-100 hover:scale-105'
+                }`}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

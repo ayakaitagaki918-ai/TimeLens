@@ -44,11 +44,11 @@ export default function HomePage() {
     setIsStarting(false)
   }
 
-  async function handleAddProject(name: string, color: string) {
+  async function handleAddProject(name: string, color: string, icon: string | null) {
     const res = await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, color }),
+      body: JSON.stringify({ name, color, icon }),
     })
     const data = await res.json()
     if (res.ok) setProjects((prev) => [...prev, data])

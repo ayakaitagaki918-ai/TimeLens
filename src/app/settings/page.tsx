@@ -24,11 +24,11 @@ export default function SettingsPage() {
     loadData()
   }, [loadData])
 
-  async function handleAddProject(name: string, color: string) {
+  async function handleAddProject(name: string, color: string, icon: string | null) {
     const res = await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, color }),
+      body: JSON.stringify({ name, color, icon }),
     })
     const data = await res.json()
     if (res.ok) setProjects((prev) => [...prev, data])
@@ -86,10 +86,10 @@ export default function SettingsPage() {
               className="bg-white rounded-2xl px-4 py-3 shadow-md shadow-gray-200/60 border border-gray-50 flex items-center gap-3"
             >
               <span
-                className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm"
-                style={{ backgroundColor: p.color }}
+                className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm shadow-sm"
+                style={{ backgroundColor: p.icon ? p.color + '22' : p.color, color: p.icon ? 'inherit' : 'white' }}
               >
-                {p.name[0]}
+                {p.icon ?? p.name[0]}
               </span>
               {editingProject?.id === p.id ? (
                 <input
