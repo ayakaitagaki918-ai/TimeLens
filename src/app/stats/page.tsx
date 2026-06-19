@@ -30,15 +30,17 @@ function buildCategoryChart(entries: TimeEntry[]): { data: ChartData[]; total: n
 }
 
 function buildProjectChart(entries: TimeEntry[]): { data: ChartData[]; total: number } {
-  const map = new Map<string, { seconds: number; color: string }>()
+  const map = new Map<string, { seconds: number; color: string; completed: boolean }>()
   let total = 0
   for (const e of entries) {
-    const key = e.project?.name ?? '不明'
+    const baseName = e.project?.name ?? '不明'
+    const isCompleted = e.project?.is_completed ?? false
+    const key = isCompleted ? `${baseName}（完了済み）` : baseName
     const color = e.project?.color ?? '#6B7280'
     const s = e.duration_seconds ?? 0
     total += s
     const prev = map.get(key)
-    map.set(key, { seconds: (prev?.seconds ?? 0) + s, color })
+    map.set(key, { seconds: (prev?.seconds ?? 0) + s, color, completed: isCompleted })
   }
   return {
     data: Array.from(map.entries())

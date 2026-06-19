@@ -22,7 +22,9 @@ export default function HomePage() {
       fetch('/api/categories'),
     ])
     const [p, c] = await Promise.all([pRes.json(), cRes.json()])
-    setProjects((Array.isArray(p) ? p : []).filter((x: Project) => x.is_active))
+    setProjects(
+      (Array.isArray(p) ? p : []).filter((x: Project) => x.is_active && !x.is_completed),
+    )
     setCategories(Array.isArray(c) ? c : [])
   }, [])
 
@@ -52,6 +54,18 @@ export default function HomePage() {
     })
     const data = await res.json()
     if (res.ok) setProjects((prev) => [...prev, data])
+  }
+
+  async function handleReorder(ids: string[]) {
+    setProjects((prev) => {
+      const map = new Map(prev.map((p) => [p.id, p]))
+      return ids.map((id) => map.get(id)!).filter(Boolean)
+    })
+    await fetch('/api/projects/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    })
   }
 
   if (timerLoading) {
@@ -101,6 +115,7 @@ export default function HomePage() {
           projects={projects}
           onSelect={(p) => { if (!activeEntry) setSelectedProject(p) }}
           onAdd={() => setShowAddProject(true)}
+          onReorder={handleReorder}
         />
       )}
 

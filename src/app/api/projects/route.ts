@@ -5,6 +5,7 @@ export async function GET() {
   const { data, error } = await supabaseServer
     .from('projects')
     .select('*')
+    .order('sort_order')
     .order('created_at')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)

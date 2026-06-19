@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const [categories, setCategories] = useState<TaskCategory[]>([])
   const [showAddProject, setShowAddProject] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [showCompleted, setShowCompleted] = useState(false)
 
   const loadData = useCallback(async () => {
     const [pRes, cRes] = await Promise.all([
@@ -45,12 +46,6 @@ export default function SettingsPage() {
     )
   }
 
-  async function handleDeleteProject(p: Project) {
-    if (!confirm(`「${p.name}」を削除しますか？\n関連する時間記録もすべて削除されます。`)) return
-    await fetch(`/api/projects/${p.id}`, { method: 'DELETE' })
-    setProjects((prev) => prev.filter((x) => x.id !== p.id))
-  }
-
   async function handleToggleProject(p: Project) {
     await fetch(`/api/projects/${p.id}`, {
       method: 'PATCH',
@@ -59,6 +54,33 @@ export default function SettingsPage() {
     })
     setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_active: !x.is_active } : x)))
   }
+
+  async function handleCompleteProject(p: Project) {
+    await fetch(`/api/projects/${p.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_completed: true }),
+    })
+    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_completed: true } : x)))
+  }
+
+  async function handleRestoreProject(p: Project) {
+    await fetch(`/api/projects/${p.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_completed: false }),
+    })
+    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_completed: false } : x)))
+  }
+
+  async function handleDeleteProject(p: Project) {
+    if (!confirm(`「${p.name}」を削除しますか？\n関連する時間記録もすべて削除されます。`)) return
+    await fetch(`/api/projects/${p.id}`, { method: 'DELETE' })
+    setProjects((prev) => prev.filter((x) => x.id !== p.id))
+  }
+
+  const activeProjects = projects.filter((p) => !p.is_completed)
+  const completedProjects = projects.filter((p) => p.is_completed)
 
   return (
     <div className="space-y-6">
@@ -69,6 +91,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* 進行中プロジェクト */}
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -83,7 +106,7 @@ export default function SettingsPage() {
           </button>
         </div>
         <div className="space-y-2">
-          {projects.map((p) => (
+          {activeProjects.map((p) => (
             <div
               key={p.id}
               className="bg-white rounded-2xl px-4 py-3 shadow-md shadow-gray-200/60 border border-gray-50 flex items-center gap-3"
@@ -101,12 +124,21 @@ export default function SettingsPage() {
                 <button
                   onClick={() => setEditingProject(p)}
                   className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
+                  title="編集"
                 >
                   <i className="fa-solid fa-pen text-xs" />
                 </button>
                 <button
+                  onClick={() => handleCompleteProject(p)}
+                  className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 hover:bg-amber-100 transition-colors"
+                  title="完了にする"
+                >
+                  <i className="fa-solid fa-flag-checkered text-xs" />
+                </button>
+                <button
                   onClick={() => handleDeleteProject(p)}
                   className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 transition-colors"
+                  title="削除"
                 >
                   <i className="fa-solid fa-trash text-xs" />
                 </button>
@@ -124,6 +156,57 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* 完了済みプロジェクト */}
+      {completedProjects.length > 0 && (
+        <section>
+          <button
+            onClick={() => setShowCompleted((v) => !v)}
+            className="flex items-center justify-between w-full mb-3"
+          >
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <i className="fa-solid fa-flag-checkered text-gray-300" />
+              完了済み（{completedProjects.length}）
+            </h2>
+            <i className={`fa-solid fa-chevron-${showCompleted ? 'up' : 'down'} text-gray-300 text-xs`} />
+          </button>
+          {showCompleted && (
+            <div className="space-y-2">
+              {completedProjects.map((p) => (
+                <div
+                  key={p.id}
+                  className="bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 flex items-center gap-3"
+                >
+                  <span
+                    className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm opacity-50"
+                    style={{ backgroundColor: p.icon ? p.color + '22' : p.color, color: p.icon ? 'inherit' : 'white' }}
+                  >
+                    {p.icon ?? p.name[0]}
+                  </span>
+                  <span className="flex-1 text-sm font-semibold text-gray-400 line-through">
+                    {p.name}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleRestoreProject(p)}
+                      className="text-xs font-bold px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                    >
+                      <i className="fa-solid fa-rotate-left mr-1" />復元
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProject(p)}
+                      className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 transition-colors"
+                    >
+                      <i className="fa-solid fa-trash text-xs" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 作業カテゴリ */}
       <section>
         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
           <i className="fa-solid fa-tags text-gray-300" />
