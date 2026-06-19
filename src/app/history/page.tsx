@@ -1,26 +1,37 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { TimeEntry } from '@/types'
+import { useState, useEffect, useCallback } from 'react'
+import { Project, TaskCategory, TimeEntry } from '@/types'
 import { useEntries } from '@/hooks/useEntries'
 import { formatDate } from '@/lib/utils'
 import EntryCard from '@/components/EntryCard'
 import EditEntryModal from '@/components/EditEntryModal'
+import AddEntryModal from '@/components/AddEntryModal'
 
 export default function HistoryPage() {
-  const { entries, isLoading, fetchEntries, updateEntry, deleteEntry } = useEntries()
+  const { entries, isLoading, fetchEntries, updateEntry, deleteEntry, addEntry } = useEntries()
   const [search, setSearch] = useState('')
   const [editTarget, setEditTarget] = useState<TimeEntry | null>(null)
+  const [showAddEntry, setShowAddEntry] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [categories, setCategories] = useState<TaskCategory[]>([])
+
+  const loadMeta = useCallback(async () => {
+    const [pRes, cRes] = await Promise.all([fetch('/api/projects'), fetch('/api/categories')])
+    const [p, c] = await Promise.all([pRes.json(), cRes.json()])
+    setProjects(Array.isArray(p) ? p.filter((x: Project) => x.is_active) : [])
+    setCategories(Array.isArray(c) ? c : [])
+  }, [])
 
   useEffect(() => {
     fetchEntries()
-  }, [fetchEntries])
+    loadMeta()
+  }, [fetchEntries, loadMeta])
 
   function handleSearch(value: string) {
     setSearch(value)
     fetchEntries(value || undefined)
   }
 
-  // 日付でグルーピング
   const grouped = entries.reduce<Record<string, TimeEntry[]>>((acc, entry) => {
     const key = formatDate(entry.started_at)
     ;(acc[key] ??= []).push(entry)
@@ -31,8 +42,16 @@ export default function HistoryPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">履歴</h1>
-        <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/40">
-          <i className="fa-solid fa-list text-white" />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddEntry(true)}
+            className="flex items-center gap-1.5 text-sm text-green-600 font-bold bg-green-50 px-3 py-2 rounded-xl hover:bg-green-100 active:scale-95 transition-all"
+          >
+            <i className="fa-solid fa-plus text-xs" />手動追加
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/40">
+            <i className="fa-solid fa-list text-white" />
+          </div>
         </div>
       </div>
 
@@ -75,6 +94,15 @@ export default function HistoryPage() {
           onSave={async (id, updates) => { await updateEntry(id, updates) }}
           onDelete={async (id) => { await deleteEntry(id) }}
           onClose={() => setEditTarget(null)}
+        />
+      )}
+
+      {showAddEntry && projects.length > 0 && (
+        <AddEntryModal
+          projects={projects}
+          categories={categories}
+          onSave={async (body) => { await addEntry(body) }}
+          onClose={() => setShowAddEntry(false)}
         />
       )}
     </div>

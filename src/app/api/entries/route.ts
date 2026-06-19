@@ -31,3 +31,24 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
+
+export async function POST(req: NextRequest) {
+  const body = await req.json()
+  const startedAt = new Date(body.started_at)
+  const endedAt = new Date(body.ended_at)
+  const durationSeconds = Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000))
+  const { data, error } = await supabaseServer
+    .from('time_entries')
+    .insert({
+      project_id: body.project_id,
+      category_id: body.category_id,
+      sub_task: body.sub_task ?? null,
+      started_at: startedAt.toISOString(),
+      ended_at: endedAt.toISOString(),
+      duration_seconds: durationSeconds,
+    })
+    .select('*, project:projects(*), category:task_categories(*)')
+    .single()
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}

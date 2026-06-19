@@ -35,5 +35,22 @@ export function useEntries() {
     return { error: res.ok ? null : 'error' }
   }, [])
 
-  return { entries, isLoading, fetchEntries, updateEntry, deleteEntry }
+  const addEntry = useCallback(async (body: {
+    project_id: string
+    category_id: string
+    started_at: string
+    ended_at: string
+    sub_task?: string
+  }) => {
+    const res = await fetch('/api/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (res.ok) setEntries((prev) => [data, ...prev])
+    return { data: res.ok ? data : null, error: res.ok ? null : data.error }
+  }, [])
+
+  return { entries, isLoading, fetchEntries, updateEntry, deleteEntry, addEntry }
 }
