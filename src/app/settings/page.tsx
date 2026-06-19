@@ -2,13 +2,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Project, TaskCategory } from '@/types'
 import AddProjectModal from '@/components/AddProjectModal'
+import EditProjectModal from '@/components/EditProjectModal'
 
 export default function SettingsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<TaskCategory[]>([])
   const [showAddProject, setShowAddProject] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
-  const [editName, setEditName] = useState('')
 
   const loadData = useCallback(async () => {
     const [pRes, cRes] = await Promise.all([
@@ -34,6 +34,17 @@ export default function SettingsPage() {
     if (res.ok) setProjects((prev) => [...prev, data])
   }
 
+  async function handleEditProject(id: string, name: string, color: string, icon: string | null) {
+    await fetch(`/api/projects/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color, icon }),
+    })
+    setProjects((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, name, color, icon } : x)),
+    )
+  }
+
   async function handleToggleProject(p: Project) {
     await fetch(`/api/projects/${p.id}`, {
       method: 'PATCH',
@@ -41,20 +52,6 @@ export default function SettingsPage() {
       body: JSON.stringify({ is_active: !p.is_active }),
     })
     setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_active: !x.is_active } : x)))
-  }
-
-  async function handleRenameProject() {
-    if (!editingProject || !editName.trim()) return
-    await fetch(`/api/projects/${editingProject.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editName.trim() }),
-    })
-    setProjects((prev) =>
-      prev.map((x) => (x.id === editingProject.id ? { ...x, name: editName.trim() } : x)),
-    )
-    setEditingProject(null)
-    setEditName('')
   }
 
   return (
@@ -91,43 +88,24 @@ export default function SettingsPage() {
               >
                 {p.icon ?? p.name[0]}
               </span>
-              {editingProject?.id === p.id ? (
-                <input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleRenameProject()}
-                  autoFocus
-                  className="flex-1 border border-blue-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50"
-                />
-              ) : (
-                <span className={`flex-1 text-sm font-semibold ${p.is_active ? 'text-gray-700' : 'text-gray-400'}`}>
-                  {p.name}
-                </span>
-              )}
+              <span className={`flex-1 text-sm font-semibold ${p.is_active ? 'text-gray-700' : 'text-gray-400'}`}>
+                {p.name}
+              </span>
               <div className="flex gap-2 items-center">
-                {editingProject?.id === p.id ? (
-                  <>
-                    <button onClick={handleRenameProject} className="text-blue-600 text-xs font-bold bg-blue-50 px-2.5 py-1 rounded-lg">保存</button>
-                    <button onClick={() => setEditingProject(null)} className="text-gray-400 text-xs px-2 py-1">取消</button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => { setEditingProject(p); setEditName(p.name) }}
-                      className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
-                    >
-                      <i className="fa-solid fa-pen text-xs" />
-                    </button>
-                    <button
-                      onClick={() => handleToggleProject(p)}
-                      className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all ${p.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-300'}`}
-                    >
-                      {p.is_active
-                        ? <><i className="fa-solid fa-circle-check mr-1" />有効</>
-                        : <><i className="fa-solid fa-circle-xmark mr-1" />無効</>}
-                    </button>
-                  </>
-                )}
+                <button
+                  onClick={() => setEditingProject(p)}
+                  className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
+                >
+                  <i className="fa-solid fa-pen text-xs" />
+                </button>
+                <button
+                  onClick={() => handleToggleProject(p)}
+                  className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all ${p.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-300'}`}
+                >
+                  {p.is_active
+                    ? <><i className="fa-solid fa-circle-check mr-1" />有効</>
+                    : <><i className="fa-solid fa-circle-xmark mr-1" />無効</>}
+                </button>
               </div>
             </div>
           ))}
@@ -164,6 +142,13 @@ export default function SettingsPage() {
 
       {showAddProject && (
         <AddProjectModal onSave={handleAddProject} onClose={() => setShowAddProject(false)} />
+      )}
+      {editingProject && (
+        <EditProjectModal
+          project={editingProject}
+          onSave={handleEditProject}
+          onClose={() => setEditingProject(null)}
+        />
       )}
     </div>
   )
